@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=640">
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=3df11bb4a97f0c5ef65895e897465276c2c701be" media="screen">
+    <link rel="stylesheet" href="/assets/css/mobile.css" media="handheld, only screen and (max-device-width:640px)">
+    <link rel="stylesheet" href="/assets/css/non-screen.css" media="handheld, only screen and (max-device-width:640px)">
+
+    <script type="text/javascript" src="/assets/js/modernizr.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript" src="/assets/js/headsmart.min.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function () {
+        $('#main_content').headsmart()
+      })
+    </script>
+    <title>请原谅我的胡说八道 by glh1991</title>
+  </head>
+
+  <body>
+    <a id="forkme_banner" href="http://github.com/glh1991/allensea.github.io">View on GitHub</a>
+    <div class="shell">
+
+      <header>
+        <span class="ribbon-outer">
+          <span class="ribbon-inner">
+            <h1>请原谅我的胡说八道</h1>
+            <h2>请原谅我的胡说八道</h2>
+          </span>
+          <span class="left-tail"></span>
+          <span class="right-tail"></span>
+        </span>
+      </header>
+
+      
+        <div id="no-downloads">
+          <span class="inner">
+          </span>
+        </div>
+      
+
+
+      <span class="banner-fix"></span>
+
+
+      <section id="main_content">
+        <h1 id="消息队列简介">消息队列简介</h1>
+
+<p>记录学习RocketMQ的学习笔记</p>
+
+<p><strong>专业词汇</strong> 
+<a href="http://alibaba.github.io/RocketMQ-docs/document/design/RocketMQ_design.pdf">reference</a></p>
+
+<ul>
+  <li>
+    <p><strong>Producer</strong></p>
+
+    <p>消息的生产者, 负责产生消息, 一般是业务系统集群</p>
+  </li>
+  <li>
+    <p><strong>Consumer</strong></p>
+
+    <p>消息的消费者,负责订阅消息并消费消息,一般也是业务系统集群</p>
+  </li>
+  <li>
+    <p><strong>Push Consumer</strong></p>
+
+    <p>应用通常向Consumer对象注册一个Listener接口, 一旦收到消息, Consumer对象回调Listener接口方法.</p>
+  </li>
+  <li>
+    <p><strong>Pull Consumer</strong></p>
+
+    <p>应用主动调用 Consumer 的拉消息方法从 Broker 拉消息，主动权由应用控制。</p>
+  </li>
+  <li>
+    <p><strong>Producer Group</strong></p>
+
+    <p>一类 Producer 的集合名称，这类 Producer 通常发送一类消息，且发送逻辑一致。</p>
+  </li>
+  <li>
+    <p><strong>Consumer Group</strong></p>
+
+    <p>一类 Consumer 的集合名称，这类 Consumer 通常消费一类消息，且消费逻辑一致。</p>
+  </li>
+  <li>
+    <p><strong>Broker</strong></p>
+
+    <p>消息中转角色，负责<strong>存储消息，转发消息</strong>，一般也称为 Server。在 JMS 规范中称为 Provider。</p>
+  </li>
+  <li>
+    <p><strong>广播消费</strong></p>
+
+    <p>一条消息可以被多个消费者消费, 即使这些消费者在同一个Consumer Group 中.当使用广播消费模式时，MQ 会将每条消息推送给集群内所有注册过的客户端,保证消息至少被每台机器消费一次. 当出现消费失败的情况,并不会实现消息重投递.因此业务服务器需要关注失败的情况. 不推荐使用广播模式. 可以利用集群消费模式模拟广播消费模式.</p>
+  </li>
+  <li>
+    <p><strong>集群消费</strong></p>
+
+    <p>一个 Consumer Group 中的 Consumer 实例平均分摊消费消息。例如某个 Topic 有 9 条消息，其中一个
+Consumer Group 有 3 个实例（可能是 3 个进程，或者 3 台机器），那么每个实例只消费其中的 3 条消息. 集群模式不能保证每次失败重投的消息都投放到同一台机器上.</p>
+  </li>
+  <li>
+    <p><strong>顺序消费</strong></p>
+
+    <p>消费消息的顺序要同发送消息的顺序一致，在 RocketMQ 中，主要指的是局部顺序，即一类消息为满足顺
+序性，必须 Producer 单线程顺序发送，且发送到同一个队列，这样 Consumer 就可以按照 Producer 发送
+的顺序去消费消息。</p>
+  </li>
+  <li>
+    <p><strong>普通顺序消息</strong></p>
+
+    <p>顺序消息的一种，正常情况下可以保证完全的顺序消息，但是一旦发生通信异常，Broker 重启，由于队列
+总数发生变化，哈希取模后定位的队列会变化，产生短暂的消息顺序不一致。
+如果业务能容忍在集群异常情况（如某个 Broker 宕机或者重启）下，消息短暂的乱序，使用普通顺序方
+式比较合适。</p>
+  </li>
+  <li>
+    <p><strong>严格顺序消息</strong></p>
+
+    <p>顺序消息的一种，无论正常异常情况都能保证顺序，但是牺牲了分布式 Failover 特性，即 Broker 集群中只
+要有一台机器不可用，则整个集群都不可用，服务可用性大大降低。
+如果服务器部署为同步双写模式，此缺陷可通过备机自动切换为主避免，不过仍然会存在几分钟的服务不
+可用。（依赖同步双写，主备自动切换，自动切换功能目前还未实现）
+目前已知的应用只有数据库 binlog 同步强依赖严格顺序消息，其他应用绝大部分都可以容忍短暂乱序，推
+荐使用普通的顺序消息。</p>
+  </li>
+  <li>
+    <p><strong>Message Queue</strong></p>
+
+    <p>在 RocketMQ 中，所有消息队列都是持久化，长度无限的数据结构，所谓长度无限是指队列中的每个存储
+单元都是定长，访问其中的存储单元使用 Offset 来访问，offset 为 java long 类型，64 位，理论上在 100
+年内不会溢出，所以认为是长度无限，另外队列中<strong>只保存最近几天的数据</strong>，之前的数据会按照过期时间来
+删除。
+也可以认为 Message Queue 是一个长度无限的数组，offset 就是下标。</p>
+  </li>
+</ul>
+
+      </section>
+
+      <footer>
+        <span class="ribbon-outer">
+          <span class="ribbon-inner">
+            
+              <p>this project by <a href="http://github.com/glh1991">glh1991</a> can be found on <a href="http://github.com/glh1991/allensea.github.io">GitHub</a></p>
+            
+            
+          </span>
+          <span class="left-tail"></span>
+          <span class="right-tail"></span>
+        </span>
+        <p>Generated with <a href="https://pages.github.com">GitHub Pages</a> using Merlot</p>
+        <span class="octocat"></span>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
