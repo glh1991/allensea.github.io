@@ -2,7 +2,7 @@
 
 记录学习RocketMQ的学习笔记
 
-**专业词汇** 
+### 专业词汇
 [reference](http://alibaba.github.io/RocketMQ-docs/document/design/RocketMQ_design.pdf)
 
 * **Producer**
@@ -29,9 +29,13 @@
     
     一类 Consumer 的集合名称，这类 Consumer 通常消费一类消息，且消费逻辑一致。
 
+* **Name Server Group**
+    
+    提供topic的路由信息,路由信息存储在内存中,broker会定时的发送路由信息到nameserver中的每一个机器，来进行更新，所以name server集群可以简单理解为无状态（实际情况下可能存在每个name server机器上的数据有短暂的不一致现象，但是通过定时更新，大部分情况下都是一致的）
+
 * **Broker**
 
-    消息中转角色，负责**存储消息，转发消息**，一般也称为 Server。在 JMS 规范中称为 Provider。
+    消息中转角色，负责**存储消息，转发消息**，一般也称为 Server, 一个Broker集群有一个统一的名字,默认是DefaultCluster. 一个集群下有多个master，每个master下有多个slave。master和slave算是一组，拥有相同的brokerName,不同的brokerId，master的brokerId是0，而slave则是大于0的值。master和slave之间可以进行同步复制或者是异步复制。
 
 * **广播消费**
 
@@ -71,3 +75,11 @@ Consumer Group 有 3 个实例（可能是 3 个进程，或者 3 台机器）�
 年内不会溢出，所以认为是长度无限，另外队列中**只保存最近几天的数据**，之前的数据会按照过期时间来
 删除。
 也可以认为 Message Queue 是一个长度无限的数组，offset 就是下标。
+
+### RocketMQ架构
+
+![架构图](assets/images/rocketmq-design.jpg)
+
+集群之间是如何进行通信交互的呢?
+
+* Producer和Name Server：每一个Producer会与Name Server集群中的一台机器建立TCP连接，会从这台Name Server上拉取路由信息。
