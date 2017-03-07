@@ -60,6 +60,8 @@
   <li>基于注解</li>
 </ol>
 
+<h3 id="基于配置文件的装配">基于配置文件的装配</h3>
+
 <p>基于XML文件的配置是比较常见的一种配置方法,在<code class="highlighter-rouge">&lt;beans&gt;</code>标签内,放置所有Spring的配置信息,包括<code class="highlighter-rouge">&lt;bean&gt;</code>元素的声明.<code class="highlighter-rouge">&lt;bean&gt;</code>将会在Spring容器中创建一个对象,他的id是在Spring中的命名,唯一,可以创建一个class属性对应的类的对象实例.</p>
 
 <p><strong>构造器注入</strong></p>
@@ -102,7 +104,7 @@
 
 <hr />
 
-<h3 id="bean的作用域">Bean的作用域</h3>
+<h4 id="bean的作用域">Bean的作用域</h4>
 
 <p>在Spring中,Bean默认都是单例的如果我们希望每次每次容器分配一个Bean时都返回一个新的实例,那要如何覆盖默认的Spring配置呢?</p>
 
@@ -142,13 +144,13 @@
 </div>
 <p>这样,每次都会实例化出一个新的Ticket的对象实例.</p>
 
-<h3 id="bean的初始化与销毁">Bean的初始化与销毁</h3>
+<h4 id="bean的初始化与销毁">Bean的初始化与销毁</h4>
 
 <p>当实例化一个Bean的时候,可能需要执行一些初始化操作来确保Bean可用,比如做一些数据的准备初始化工作,同理在销毁一个Bean的时候,也可能需要做一些额外的销毁工作. <code class="highlighter-rouge">init-method</code>指定初始化Bean的方法, <code class="highlighter-rouge">destroy-method</code>指定了销毁Bean的方法.</p>
 
 <hr />
 
-<h3 id="注入bean属性">注入Bean属性</h3>
+<h4 id="注入bean属性">注入Bean属性</h4>
 <p>在一个Class中往往会有很多属性, 这些属性也是可以通过Spring注入进去的.使用<code class="highlighter-rouge">&lt;property&gt;</code>来配置Bean的属性.</p>
 
 <div class="highlighter-rouge"><pre class="highlight"><code>public class Singer {
@@ -174,6 +176,105 @@
 </div>
 <p>我们可以看到就像构造器装配Bean一样, 属性的装配一样很方便.除此之外我们还可以装配集合哟.<code class="highlighter-rouge">&lt;List&gt;</code>, <code class="highlighter-rouge">&lt;set&gt;</code>, <code class="highlighter-rouge">&lt;map&gt;</code>, <code class="highlighter-rouge">&lt;props&gt;</code>. 这里就不详细介绍了,比较简单,查查文档吧.</p>
 
+<h4 id="bean的自动装配">Bean的自动装配</h4>
+
+<p>所谓Bean的自动装配就是让Spring识别出可以自动装配的场景.主要有4中策略:</p>
+
+<ul>
+  <li>
+    <p>byName: 与Bean的属性具有相同ID的其他Bean自动装配到Bean的对应属性中.如果没有跟属性名字相匹配的Bean,则该属性不进行装配.用之前举过的栗子来说:</p>
+
+    <div class="highlighter-rouge"><pre class="highlight"><code>  &lt;bean id="instrument" class="Instrument"/&gt;
+  &lt;bean id='singer' class="Singer" &gt;
+      &lt;property name="name" value="allen"&gt;
+      &lt;property name="instrument" ref="instrument"&gt;
+  &lt;/bean&gt;
+</code></pre>
+    </div>
+    <p>就可以通过byName缩写成如下形式:</p>
+    <div class="highlighter-rouge"><pre class="highlight"><code>  &lt;bean id="instrument" class="Instrument"/&gt;
+  &lt;bean id='singer' class="Singer" autowire="byName"&gt;
+      &lt;property name="name" value="allen"&gt;
+  &lt;/bean&gt;
+</code></pre>
+    </div>
+    <p>Spring会通过instrument的setter注入来进行装配.通过byName的方式有缺点: 如果名字一样呢?</p>
+  </li>
+  <li>byType: 与Bean的属性具有相同类型的其他Bean装配到Bean对应的属性中.byType也有缺点,如果有多个类型相同的Bean,就会报错了.</li>
+  <li>constructor: 与Bean的构造器入参具有相同类型的其他Bean自动装配到Bean的构造器参数中.constructor与byType有点类似.</li>
+  <li>autodetect: 先尝试constructor进行装配,如果失败尝试byType</li>
+</ul>
+
+<hr />
+
+<h3 id="使用注解装配">使用注解装配</h3>
+
+<p>注解装配类似自动装配, 注解的方式粒度更小我们可以针对某一个属性来对其自动装配.Spring默认禁用了注解的方式,启动方式是在Spring的配置文件的context命名空间中加上<code class="highlighter-rouge">&lt;context:annotation-config&gt;</code>元素.配置完成以后我们就可以针对属性,方法和构造器进行自动装配了.</p>
+
+<h4 id="autowired">@Autowired</h4>
+
+<p>我们可以使用@Autowired注解直接标注属性,并删除setter方法:</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>@Autowired
+private Instrument instrument;
+</code></pre>
+</div>
+<p>@Autowired的注解会有一些限制, 如果没有找到合适的Bean或者存在多个匹配的Bean会出现问题. 可以通过下面的方式解决这些问题.</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>@Autowired(required=false)
+private Instrument instrument;
+</code></pre>
+</div>
+<p>如果Spring没有找到Instrument类型的Bean,通过required=false可以允许instrument的属性值为空.如果有多个Bean匹配呢?我们能不能通过Bean的ID来指定装配哪个Bean呢?@Qualifier能够很好限定自动装配byName.</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>@Autowired
+@Qualifier("pinao")
+private Instrument instrument;
+</code></pre>
+</div>
+<p>在pinao的实现中我们这么写:</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>@Qualifier("pinao")
+public class Pinao implement Instrument{}
+</code></pre>
+</div>
+<p>我们还可以通过自定义注解来进一步缩小Bean的自动装配.与@Autowired类似的还有一个@Inject注解.</p>
+
+<h4 id="value">@Value</h4>
+
+<p>@Value可以注解装配String类型的值和基本类型的值如int, boolean.</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>@Value("allen")
+private String name;
+</code></pre>
+</div>
+<p>在实际的项目中,我们可以通过SpEL表达式在运行期将复杂的计算结果装配到Bean的属性中.</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>@Value("${ali.mq.oauth.topic}")
+public void setTopic(String topic) {
+    this.topic = topic;
+}
+</code></pre>
+</div>
+
+<h4 id="自动检测bean">自动检测Bean</h4>
+
+<p>看到这你会想,我能不能懒到连<code class="highlighter-rouge">&lt;bean&gt;</code>都不写,通过Spring自动检测找到那些是可以装配成Bean的呢? 答案是可以的.使用<code class="highlighter-rouge">&lt;context:component-scan&gt;</code>来替换<code class="highlighter-rouge">&lt;context:annotation-config&gt;</code>.<code class="highlighter-rouge">&lt;context:component-scan&gt;</code>会扫描指定包及其所有子包,并查找出能够注册为Bean的类.通过下面的注解方式来注解类:</p>
+
+<ul>
+  <li>@Component 通用构造器注解,标识该类为Spring组件.默认的Bean ID为无限定类名, 当然也可以自定义如: @Component(“customName”)</li>
+  <li>@Controller 标志为Spring MVC controller</li>
+  <li>@Reponsitory 标识该类为数据仓库</li>
+  <li>@Service 标识为服务</li>
+</ul>
+
+<h4 id="使用spring基于java的配置">使用Spring基于JAVA的配置</h4>
+
+<p>其实我本人比较讨厌写XML配置文件,我们要写一对配置文件里面写上关于<code class="highlighter-rouge">&lt;bean&gt;</code>让Spring装配这些类.能不能通过注解的方式来让Spring自动加载类呢? 答案也是有的.通过@Configuration注解的类等价于XML配置文件中的<code class="highlighter-rouge">&lt;beans&gt;</code>,他里面通过@Bean注解的方法就是他的Bean.</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>@Configuration
+public class MyConfig{
+    @Bean
+    public Instrument instrument() {
+        return new Piano();
+    }
+}
+</code></pre>
+</div>
+<p>在这里定义了一个Bean,其ID为instrument,返回的是一个Piano对象实例.这样有他的好处,那就是我们可以不用配置XML文件了,而且如果我们重名了Instrument类,也不需要去修改XML的class属性.</p>
 
       </section>
 
