@@ -11,7 +11,7 @@ Spring容器提供两种配置Bean的方式:
 
 ### 基于配置文件的装配
 
-基于XML文件的配置是比较常见的一种配置方法,在`<beans>`标签内,放置所有Spring的配置信息,包括`<bean>`元素的声明.`<bean>`将会在Spring容器中创建一个对象,他的id是在Spring中的命名,唯一,可以创建一个class属性对应的类的对象实例.
+基于XML文件的配置是比较常见的一种配置方法,在`<beans>`标签内,放置所有Spring的配置信息,包括`<bean>`元素的声明.`<bean>`将会在Spring容器中创建一个对象,他的id是在Spring中的命名,唯一,可以创建一个class属性对应的类的对象实例.Spring所谓的容器其实是一个Map, Spring通过Load Resource Files并解析XML将ID作为Map的key, 里面存放的是对应的类信息包括方法,构造方法,属性等.
 
 **构造器注入**
 
@@ -195,3 +195,5 @@ public class MyConfig{
 }
 ```
 在这里定义了一个Bean,其ID为instrument,返回的是一个Piano对象实例.这样有他的好处,那就是我们可以不用配置XML文件了,而且如果我们重名了Instrument类,也不需要去修改XML的class属性.
+
+推荐一个不错的开源项目[tiny-spring](https://github.com/code4craft/tiny-spring), 这个项目实现了一个比较简单的Spring ioc,方便我们理解Spring的原理.
