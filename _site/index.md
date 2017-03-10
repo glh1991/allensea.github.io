@@ -7,7 +7,8 @@
 ### Spring
 
 * [Spring初体验](spring-intro.md)
-* [Spring IOC](spring-ioc.md)
+* [Spring DI](spring-di.md)
+* [Spring AOP](spring-aop.md)
 
 ### 消息队列
 

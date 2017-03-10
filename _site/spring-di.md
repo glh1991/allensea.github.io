@@ -1,4 +1,4 @@
-# Spring IOC
+# Spring DI
 
 ### 装配Bean
 

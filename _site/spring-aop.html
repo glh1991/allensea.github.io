@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=640">
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=4d3ef8766e14340b083cfeeddf45db109e605b97" media="screen">
+    <link rel="stylesheet" href="/assets/css/mobile.css" media="handheld, only screen and (max-device-width:640px)">
+    <link rel="stylesheet" href="/assets/css/non-screen.css" media="handheld, only screen and (max-device-width:640px)">
+
+    <script type="text/javascript" src="/assets/js/modernizr.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript" src="/assets/js/headsmart.min.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function () {
+        $('#main_content').headsmart()
+      })
+    </script>
+    <title>allen的日常 by glh1991</title>
+  </head>
+
+  <body>
+    <a id="forkme_banner" href="http://github.com/glh1991/allensea.github.io">View on GitHub</a>
+    <div class="shell">
+
+      <header>
+        <span class="ribbon-outer">
+          <span class="ribbon-inner">
+            <h1>allen的日常</h1>
+            <h2>请原谅我的胡说八道</h2>
+          </span>
+          <span class="left-tail"></span>
+          <span class="right-tail"></span>
+        </span>
+      </header>
+
+      
+        <div id="no-downloads">
+          <span class="inner">
+          </span>
+        </div>
+      
+
+
+      <span class="banner-fix"></span>
+
+
+      <section id="main_content">
+        <h1 id="spring-面向切面">Spring 面向切面</h1>
+
+<p>面向切面编程以前对我来说是一个很深奥的概念,觉得很神奇,这个切面是什么,为什么要面向切面,面向切面有什么使用场景呢? 带着这些疑问好好的看了书,写点读书笔记</p>
+
+<p>在软件开发中,有些程序关注业务实现有些程序关注系统需求, 这两者之间逻辑上没有什么关联点,比如记录一个请求的响应时间,日志等这些跟业务并没有联系,如果实现记录日志的需求耦合在业务代码中那么必然很麻烦且不好维护. 通过面向切面编程,让切面去帮我们处理记录日志的需求,那么就做到解耦了.</p>
+
+<p>现在我们来了解面向切面编程的元素和概念定义.</p>
+
+<h3 id="定义aop术语">定义AOP术语</h3>
+
+<p>AOP的常用术语有一下几点: 切面, 通知, 切点, 连接点. 我们一个个来分析</p>
+
+<p><strong>切面</strong></p>
+
+<p>切面实际上是一个类, 里面定义了通知和切点.简单的来说就是切面定义了一个处理过程, 在什么时候什么地方处理什么任务.</p>
+
+<p><strong>通知</strong></p>
+
+<p>通知这个词看起来高大上, 实际上就是定义了在什么时候处理什么任务,他是切面类定义的一个方法.通知的调用时间主要分为几种:</p>
+
+<ul>
+  <li>Before: 在方法被调用之前执行通知</li>
+  <li>After: 在方法被调用完成之后执行通知(无论失败与否)</li>
+  <li>After-returning: 在方法<em>成功</em>执行之后调用通知</li>
+  <li>After-throwing: 在方法抛出<em>异常</em>之后调用通知</li>
+  <li>Around: 通知包裹了被通知方法, 在被通知方法调用之前和之后执行自定义的行为</li>
+</ul>
+
+<p><strong>连接点</strong></p>
+
+<p>连接点是应用执行过程中能够插入切面的一个点,这个点可以是调用方法时,抛出异常时,修改字段时.切面代码通过这些点插入到应用的正常流程中, 并添加<em>新行为</em></p>
+
+<p><strong>切点</strong></p>
+
+<p>切点定义了在什么地方执行通知.</p>
+
+<p><strong>织入</strong></p>
+
+<p>织入是将切面应用到目标对象来创建新的代理对象的过程,切面在指定的连接点被织入到目标对象中,在目标对象的生命周期中有多点可以进行织入.</p>
+
+<ul>
+  <li>编译期: 切面在目标类编译期被织入</li>
+  <li>类加载期: 切面在目标类加载到JVM时被织入</li>
+  <li>运行期: 切面在应用运行过程中的某个时刻织入,在织入切面时,AOP容器会为目标对象动态创建一个代理对象.</li>
+</ul>
+
+<p>Spring的通知是JAVA标准类编写的, 定义通知所应用的切点可以通过在Spring配置文件中采用XML编写.
+Spring在运行期间通知对象,Spring在运行期将切面织入到Spring管理的Bean中,当拦截到方法调用时, 在调用目标Bean方法之前,代理会执行切面逻辑.Spring只支持方法连接点,所以你可以认为Spring只能在方法上织入切面.</p>
+
+<p>如何定义一个切点?
+举个例子: <code class="highlighter-rouge">excution(* cn.dface.Instument.play(..))</code>这里定义了一个切点: 在执行cn.dface.Instument.play的方法(..表示该方法可以是任意参数)触发通知.</p>
+
+<p>还有什么表达式可以定义切点呢?</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>指示器</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>arg()</td>
+      <td>限制连接点匹配参数为指定类型的执行方法</td>
+    </tr>
+    <tr>
+      <td>@args()</td>
+      <td>限制连接点匹配参数由指定注解标注的执行方法</td>
+    </tr>
+    <tr>
+      <td>excution()</td>
+      <td>用于匹配连接点的执行方法</td>
+    </tr>
+    <tr>
+      <td>this()</td>
+      <td>限制连接点匹配AOP代理的Bean引用为指定类型的类</td>
+    </tr>
+    <tr>
+      <td>target()</td>
+      <td>限制连接点匹配目标对象为指定类型的类</td>
+    </tr>
+    <tr>
+      <td>@target()</td>
+      <td>限制连接点匹配特定的执行对象, 这些对象对用的类具备指定类型的注解</td>
+    </tr>
+    <tr>
+      <td>within()</td>
+      <td>限制连接点匹配的类型</td>
+    </tr>
+    <tr>
+      <td>@within()</td>
+      <td>限制连接点匹配注定注解所标注的类型</td>
+    </tr>
+    <tr>
+      <td>@annotation</td>
+      <td>限制匹配带有指定注解连接点</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4 id="如何在xml中声明切面">如何在XML中声明切面</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>配置元素</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">&lt;aop:advisor&gt;</code></td>
+      <td>定义通知器</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">&lt;aop:after&gt;</code></td>
+      <td>定义AOP后置通知</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">&lt;aop:after-returning&gt;</code></td>
+      <td>定义After-returning 通知</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">&lt;aop:after-throwing&gt;</code></td>
+      <td>定义after-throwning 通知</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">&lt;aop:around&gt;</code></td>
+      <td>定义环绕通知</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">&lt;aop:aspect&gt;</code></td>
+      <td>定义通知</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">&lt;aop:aspectj-autoproxy&gt;</code></td>
+      <td>定义@AspectJ注解驱动的切面</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">&lt;aop:before&gt;</code></td>
+      <td>定义前置通知</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">&lt;aop:config&gt;</code></td>
+      <td>顶层AOP配置元素</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">&lt;aop:declare-parents&gt;</code></td>
+      <td>为被通知的对象引入额外接口, 并透明实现</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">&lt;aop:pointcut&gt;</code></td>
+      <td>定义切点</td>
+    </tr>
+  </tbody>
+</table>
+
+
+      </section>
+
+      <footer>
+        <span class="ribbon-outer">
+          <span class="ribbon-inner">
+            
+              <p>this project by <a href="http://github.com/glh1991">glh1991</a> can be found on <a href="http://github.com/glh1991/allensea.github.io">GitHub</a></p>
+            
+            
+          </span>
+          <span class="left-tail"></span>
+          <span class="right-tail"></span>
+        </span>
+        <p>Generated with <a href="https://pages.github.com">GitHub Pages</a> using Merlot</p>
+        <span class="octocat"></span>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
