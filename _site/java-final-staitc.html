@@ -47,28 +47,32 @@
 
 
       <section id="main_content">
-        <h2 id="blog-list">Blog List</h2>
+        <h1 id="java-final和static">JAVA final和static</h1>
 
-<h3 id="java语言">JAVA语言</h3>
+<h3 id="final">final</h3>
 
-<ul>
-  <li><a href="/java-class-type-info.html">Java 的类型信息</a></li>
-</ul>
-
-<h3 id="spring">Spring</h3>
+<p>final表示最终的意思,顾名思义就是说一旦赋值就无法改变的意思.它可以用来修饰非抽象类、非抽象类成员方法和变量.</p>
 
 <ul>
-  <li><a href="/spring-intro.html">Spring初体验</a></li>
-  <li><a href="/spring-di.html">Spring DI</a></li>
-  <li><a href="/spring-aop.html">Spring AOP</a></li>
+  <li>final 类不能被继承,final类中的方法都是final方法. 在设计时如果这个类不需要子类,且这个类的实现细节不允许发生改变,这可以定义这个类为final类</li>
+  <li>final 方法不能被子类重写覆盖,但是可以被继承. final方法将会被锁定, 实现不会被更改,且在编译时final方法会转入内嵌机制,提高执行效率</li>
+  <li>final 成员变量表示常量, 一旦赋值, 值不可变</li>
+  <li>final 不可用于修饰构造器</li>
 </ul>
 
-<h3 id="消息队列">消息队列</h3>
+<h3 id="static">static</h3>
+
+<p>static表示静态的意思, 被static修饰的成员变量和成员方法独立于该类的任何对象.</p>
+
+<p>用static修饰的代码块表示静态代码块，当Java虚拟机（JVM）加载类时，就会执行该代码块.(这很常用)</p>
 
 <ul>
-  <li><a href="/mq-intro.html">消息队列简介</a></li>
-  <li><a href="/mq-scene.html">消息队列使用场景</a></li>
+  <li>static变量: 静态变量在内存中只有一个拷贝, JVM只为静态分配一次内存，在加载类的过程中完成静态变量的内存分配，可用类名直接访问.</li>
+  <li>静态方法: 静态方法可以直接通过类名调用，任何的实例也都可以调用，因此静态方法中不能用this和super关键字，不能直接访问所属类的实例变量和实例方法</li>
+  <li>静态代码块: 在JVM加载类的时候会执行静态代码块,且会执行一次.</li>
 </ul>
+
+<p>final 和static一起用: 可以简单的理解为是静态常量,但是有个误区是用final static声明的容器不能改变其本身但是可以改变容器内存放的对象.</p>
 
 
       </section>

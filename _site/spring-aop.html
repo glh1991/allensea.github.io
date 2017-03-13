@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <meta name="viewport" content="width=640">
 
-    <link rel="stylesheet" href="/assets/css/style.css?v=4d3ef8766e14340b083cfeeddf45db109e605b97" media="screen">
+    <link rel="stylesheet" href="/assets/css/style.css?v=ec8bf099fc9ecdb3e09c3bb7c9b290aff39ad895" media="screen">
     <link rel="stylesheet" href="/assets/css/mobile.css" media="handheld, only screen and (max-device-width:640px)">
     <link rel="stylesheet" href="/assets/css/non-screen.css" media="handheld, only screen and (max-device-width:640px)">
 
@@ -49,7 +49,7 @@
       <section id="main_content">
         <h1 id="spring-面向切面">Spring 面向切面</h1>
 
-<p>面向切面编程以前对我来说是一个很深奥的概念,觉得很神奇,这个切面是什么,为什么要面向切面,面向切面有什么使用场景呢? 带着这些疑问好好的看了书,写点读书笔记</p>
+<p>面向切面编程以前对我来说是一个很深奥的概念,觉得很神奇,切面是什么,为什么要面向切面,面向切面有什么使用场景呢? 带着这些疑问好好的看了书,写点读书笔记</p>
 
 <p>在软件开发中,有些程序关注业务实现有些程序关注系统需求, 这两者之间逻辑上没有什么关联点,比如记录一个请求的响应时间,日志等这些跟业务并没有联系,如果实现记录日志的需求耦合在业务代码中那么必然很麻烦且不好维护. 通过面向切面编程,让切面去帮我们处理记录日志的需求,那么就做到解耦了.</p>
 
@@ -57,13 +57,13 @@
 
 <h3 id="定义aop术语">定义AOP术语</h3>
 
-<p>AOP的常用术语有一下几点: 切面, 通知, 切点, 连接点. 我们一个个来分析</p>
+<p>AOP的常用术语有一下几点: 切面, 通知, 切点, 连接点. 一个个介绍</p>
 
-<p><strong>切面</strong></p>
+<p><strong>切面 aspect</strong></p>
 
 <p>切面实际上是一个类, 里面定义了通知和切点.简单的来说就是切面定义了一个处理过程, 在什么时候什么地方处理什么任务.</p>
 
-<p><strong>通知</strong></p>
+<p><strong>通知 advice</strong></p>
 
 <p>通知这个词看起来高大上, 实际上就是定义了在什么时候处理什么任务,他是切面类定义的一个方法.通知的调用时间主要分为几种:</p>
 
@@ -75,13 +75,13 @@
   <li>Around: 通知包裹了被通知方法, 在被通知方法调用之前和之后执行自定义的行为</li>
 </ul>
 
-<p><strong>连接点</strong></p>
+<p><strong>连接点 joinpoint</strong></p>
 
 <p>连接点是应用执行过程中能够插入切面的一个点,这个点可以是调用方法时,抛出异常时,修改字段时.切面代码通过这些点插入到应用的正常流程中, 并添加<em>新行为</em></p>
 
-<p><strong>切点</strong></p>
+<p><strong>切点 pointcut</strong></p>
 
-<p>切点定义了在什么地方执行通知.</p>
+<p>切点定义了在什么地方执行通知,也就是切点定义了在什么连接点执行什么通知.</p>
 
 <p><strong>织入</strong></p>
 
@@ -90,16 +90,23 @@
 <ul>
   <li>编译期: 切面在目标类编译期被织入</li>
   <li>类加载期: 切面在目标类加载到JVM时被织入</li>
-  <li>运行期: 切面在应用运行过程中的某个时刻织入,在织入切面时,AOP容器会为目标对象动态创建一个代理对象.</li>
+  <li>运行期: 切面在应用运行过程中的某个时刻织入,在织入切面时,AOP容器会为目标对象<strong>动态</strong>创建一个代理对象.
+Spring是基于代理的AOP变体, Spring对AOP的支持只局限于方法拦截, 如果AOP需求超过了简单方法拦截的范畴, 利用Spring的DI把Spring Bean注入到Aspectj切面中.</li>
 </ul>
 
+<p>Spring是在运行期间通知对象的,通过下面这幅图加深理解:</p>
+
+<p><img src="assets/images/aop-aspect.png" alt="spring-aop" /></p>
+
 <p>Spring的通知是JAVA标准类编写的, 定义通知所应用的切点可以通过在Spring配置文件中采用XML编写.
-Spring在运行期间通知对象,Spring在运行期将切面织入到Spring管理的Bean中,当拦截到方法调用时, 在调用目标Bean方法之前,代理会执行切面逻辑.Spring只支持方法连接点,所以你可以认为Spring只能在方法上织入切面.</p>
+Spring在运行期间通知对象,将切面织入到Spring管理的Bean中,当拦截到方法调用时, 在调用目标Bean方法之前,代理会执行切面逻辑.Spring只支持方法连接点,所以你可以认为Spring只能在方法上织入切面.</p>
+
+<h4 id="定义切点">定义切点</h4>
 
 <p>如何定义一个切点?
 举个例子: <code class="highlighter-rouge">excution(* cn.dface.Instument.play(..))</code>这里定义了一个切点: 在执行cn.dface.Instument.play的方法(..表示该方法可以是任意参数)触发通知.</p>
 
-<p>还有什么表达式可以定义切点呢?</p>
+<p>还有什么表达式可以定义切点呢? Spring AOP需要使用AspectJ的切点表达式来定义切点.</p>
 
 <table>
   <thead>
@@ -148,7 +155,9 @@ Spring在运行期间通知对象,Spring在运行期将切面织入到Spring管�
   </tbody>
 </table>
 
-<h4 id="如何在xml中声明切面">如何在XML中声明切面</h4>
+<p>如何编写切点? 以excution表达式为例, 表达式已*开始表示我们不关心方法返回值的类型, 然后指定了全限定类名和方法名, 对于参数列表(..) 表示切点选择任意的play()方法,不论入参是什么.</p>
+
+<h3 id="如何在xml中声明切面">如何在XML中声明切面</h3>
 
 <table>
   <thead>
