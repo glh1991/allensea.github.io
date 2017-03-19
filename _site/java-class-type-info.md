@@ -9,7 +9,7 @@ JAVA是如何在运行中识别对象和类的信息的? 主要采用两种方�
 
 在JAVA中,所有的类型转换都是在运行时进行正确性检查的.而RTTI的含义就是: 在运行时,识别到一个对象的类型. 
 
-类是程序的一部分, 每个类都有一个Class对象, Class对象包含了与类有关的信息, 实际上, Class对象也是用来创建类的所有的常规对象的.
+类是程序的一部分, 每个类都有一个Class对象,也就是说类也是对象(JAVA处处是对象), Class对象包含了与类有关的信息, 实际上, Class对象也是用来创建类的所有的常规对象的.
 
 每当编译一个新类, 就会产生一个Class对象(物理上是一个同名的.class文件), .class文件是这个类的字节码文件. JVM的类加载器首先检查这个类的Class对象是否已经被加载了,如果还未被加载就通过findClass()读取同名文件,将其转成byte数组.然后再通过defineClass()方法来生成这个类的对象. 一旦某个类的Class对象被加载到内存, 他就可以被用来创建这个类的所有对象.
 
@@ -18,4 +18,13 @@ Class对象提供了那些方法呢?
 * Class.forName("className"): forName这个方法是Class类的一个static的成员,类对象就和其他对象一样,我们可以获取并操作他的引用. forName()是取得Class对象的引用的一种方法.当然forName()也有副作用,比如没有找到相关的class会抛出ClassNotFoundException异常.需要注意的是这个className字符串必须使用全限定名(包含包名).
 * newInstance(): newInstance()是Class的一个实例方法,可以通过newInstance()方法来创建类
 
-除了使用forName,JAVA还提供一个更安全的的方法: 类字面常量.
+除了使用forName,JAVA还提供一个更安全的的方法: 类字面常量.比如boolean.class.  使用这种".class"的形式来创建对Class对象的引用时,不会自动地初始化该Class对象.为了使用类而做的准备工作实际上分为三部分:
+1. 加载:  由类加载器执行, 该步骤将查找字节码,并从这些字节码中创建一个Class对象
+2. 链接: 在链接阶段将验证类中的字节码, 为静态域分配存储空间
+3. 初始化: 如果该类具有超类, 则对其进行初始化, 执行静态初始化器和静态初始化块
+```
+Class initable = Initable.class;
+initable.newInstance();
+```
+
+

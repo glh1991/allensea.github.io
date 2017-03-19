@@ -87,3 +87,21 @@ Spring在运行期间通知对象,将切面织入到Spring管理的Bean中,当�
 | `<aop:pointcut>` | 定义切点 |
 
 
+### 注解AOP
+
+使用注解来创建切面是AspectJ 5所引入的关键特性.
+
+```
+package org.xyz;
+import org.aspectj.lang.annotation.Aspect;
+
+@Aspect // 切面注解
+@Component
+public class NotVeryUsefulAspect {
+
+    @Pointcut("execution(* transfer(..))")// the pointcut expression
+    private void anyOldTransfer() {}// the pointcut signature
+}
+```
+需要我们注意的是@Aspect并没有将这个类加载到Spring容器,所以我们加上了@Component. excution是Spring支持的一种切点, 还有`call, get, set, preinitialization, staticinitialization, initialization, handler, adviceexecution, withincode, cflow, cflowbelow, if, @this`
+

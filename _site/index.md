@@ -2,7 +2,9 @@
 
 ### JAVA语言
 
+* [Java 数据结构](java-collection.md)
 * [Java 的类型信息](java-class-type-info.md)
+* [final和static](java-final-static.md)
 
 ### Spring
 
