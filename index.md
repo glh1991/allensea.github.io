@@ -2,7 +2,8 @@
 
 ### JAVA语言
 
-* [Java 数据结构](java-collection.md)
+* [Java 集合](java-collection.md)
+* [Map 深入浅出] (java-map.md)
 * [Java 的类型信息](java-class-type-info.md)
 * [final和static](java-final-static.md)
 

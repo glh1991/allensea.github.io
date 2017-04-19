@@ -1,4 +1,4 @@
-# JAVA的数据结构
+# JAVA的集合
 
 趁着周末写点关于JAVA的数据结构.在工作中我们经常要用到各种数据结构, 我们常用的主要分为Collection和MAP.
 
@@ -30,7 +30,7 @@ Collection是一个个独立元素的序列,这些元素的都服从多条规则
 * LinkedList: 基于链表,元素的添加删除操作更加快捷,只要移动指针就行了,同时能够很好的支持顺序访问, 但是随机访问比较慢.LikedList添加了一些额外的操作方法,如: getFirst(getFirst和element方法效果一致), addFirst, addLast, removeList, removeFirst(removeFirst和remove方法效果一致,都是移除第一个元素). 同样,在并发的情况中, LinkedList也是线程不安全的.
 
 
-### Set
+#### Set
 
 Set的最大特点就是元素保证唯一, 如何保证元素唯一呢? 那就需要实现Set元素的equal方法了.Set常用的有HashSet, TreeSet, LinkedSet,SortedSet.
 
