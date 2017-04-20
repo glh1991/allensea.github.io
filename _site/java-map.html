@@ -78,6 +78,52 @@ HashMap的hashcode是通过key的hashCode和value的hashCode生成的,算法是<
 </code></pre>
 </div>
 
+<h3 id="linkedhashmap">LinkedHashMap</h3>
+
+<p>相对于HashMap, LinkedHashMap是有序的, 保留了输入的顺序,所以在输出的时候可以按照输入顺序输出.LinkedHashMap继承自HashMap, 以哈希表与双向链表形式实现顺序输入输出, 根据before,after两个引用来指向上一个和下一个元素.
+初始化一个LikedHashMap:</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>public LinkedHashMap(int initialCapacity, float loadFactor) {
+    super(initialCapacity, loadFactor);
+    accessOrder = false;
+}
+</code></pre>
+</div>
+<p>accessOrder: 对于访问顺序，为 true；对于插入顺序，则为 false。一般情况下，不必指定排序模式，其迭代顺序即为默认为插入顺序。
+让我们来看看如何添加一个节点</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>private void linkNodeLast(LinkedHashMap.Entry&lt;K,V&gt; p) {
+    LinkedHashMap.Entry&lt;K,V&gt; last = tail;
+    tail = p;
+    if (last == null)
+        head = p;
+    else {
+        p.before = last;
+        last.after = p;
+    }
+}
+
+Node&lt;K,V&gt; newNode(int hash, K key, V value, Node&lt;K,V&gt; e) {
+    LinkedHashMap.Entry&lt;K,V&gt; p =
+        new LinkedHashMap.Entry&lt;K,V&gt;(hash, key, value, e);
+    linkNodeLast(p);
+    return p;
+}
+</code></pre>
+</div>
+<p>LinkedHashMap并没有重写HashMap的put方法,只是重写了newNode方法,改变了添加节点的形式.为了维护LinkedHashMap的有序性,在删除和添加的时候必然会有性能上的损耗.</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>private void remove() {
+    before.after = after;
+    after.before = before;
+}
+
+/**clear链表，设置header为初始状态*/
+public void clear() {
+ super.clear();
+ header.before = header.after = header;
+}
+</code></pre>
+</div>
+
 <h4 id="reference">reference</h4>
 
 <ul>
