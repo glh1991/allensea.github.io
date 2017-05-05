@@ -47,32 +47,13 @@
 
 
       <section id="main_content">
-        <h2 id="blog-list">Blog List</h2>
+        <h1 id="并发编程">并发编程</h1>
 
-<h3 id="java语言">JAVA语言</h3>
+<p>并发编程是为了利用CPU的特性,多线程处理多任务加快程序的执行速度.但是并不是说启动更多的线程处理任务都能达到我们想要的效果, 这里面涉及到上下文切换的问题,死锁问题等.</p>
 
-<ul>
-  <li><a href="/java-collection.html">Java 集合</a></li>
-  <li><a href="/java-map.html">Map 深入浅出</a></li>
-  <li><a href="/java-class-type-info.html">Java 的类型信息</a></li>
-  <li><a href="/java-final-static.html">final和static</a></li>
-  <li><a href="/Java%E8%BF%90%E8%A1%8C%E6%97%B6%E7%9A%84%E5%8C%BA%E5%9F%9F%E6%95%B0%E6%8D%AE.html">JAVA运行时的区域数据</a></li>
-</ul>
+<p>所谓上下文切换是指,CPU多线程处理任务是通过时间片切换来实现的, CPU给每个线程分配时间片, 因为时间片很短所以我们总觉得任务是在不断的执行没有发生切换. CPU通过时间片切换算法来循环执行任务,当一个任务执行一个时间片以后需要保存当前的状态,以方便后面切换会改任务时能够接着执行下去,记录这个状态需要消耗时间,而这种切换也就被称为上下文切换.</p>
 
-<h3 id="spring">Spring</h3>
-
-<ul>
-  <li><a href="/spring-intro.html">Spring初体验</a></li>
-  <li><a href="/spring-di.html">Spring DI</a></li>
-  <li><a href="/spring-aop.html">Spring AOP</a></li>
-</ul>
-
-<h3 id="消息队列">消息队列</h3>
-
-<ul>
-  <li><a href="/mq-intro.html">消息队列简介</a></li>
-  <li><a href="/mq-scene.html">消息队列使用场景</a></li>
-</ul>
+<p>如上所述, 因为存在上下文切换的时间损耗, 所以并行的执行程序不一定比串行要快,这个需要具体问题具体分析,推荐一些性能测试工具: Lmbench3(测量上下文切换时长), vmstat测量上下文切换次数.</p>
 
 
       </section>

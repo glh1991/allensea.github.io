@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=640">
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=4bb339ab56748c67c9e8d3da9bc5f1c80fd3a456" media="screen">
+    <link rel="stylesheet" href="/assets/css/mobile.css" media="handheld, only screen and (max-device-width:640px)">
+    <link rel="stylesheet" href="/assets/css/non-screen.css" media="handheld, only screen and (max-device-width:640px)">
+
+    <script type="text/javascript" src="/assets/js/modernizr.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript" src="/assets/js/headsmart.min.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function () {
+        $('#main_content').headsmart()
+      })
+    </script>
+    <title>allen的日常 by glh1991</title>
+  </head>
+
+  <body>
+    <a id="forkme_banner" href="http://github.com/glh1991/allensea.github.io">View on GitHub</a>
+    <div class="shell">
+
+      <header>
+        <span class="ribbon-outer">
+          <span class="ribbon-inner">
+            <h1>allen的日常</h1>
+            <h2>请原谅我的胡说八道</h2>
+          </span>
+          <span class="left-tail"></span>
+          <span class="right-tail"></span>
+        </span>
+      </header>
+
+      
+        <div id="no-downloads">
+          <span class="inner">
+          </span>
+        </div>
+      
+
+
+      <span class="banner-fix"></span>
+
+
+      <section id="main_content">
+        <h1 id="java内存模型">JAVA内存模型</h1>
+
+<p>JAVA内存模型(Java Memory Model) 简称JMM,规范了Java虚拟机与计算机内存是如何系统工作的, 如果想要设计优良的并发程序那么就要理解JAVA的内存模型.JAVA内存模型定义了如何以及何时可以看到有其他线程修改过后的共享变量值,以及在必须时如何同步共享变量.</p>
+
+<p>每个运行在JVM上的线程都有自己的线程栈, 在线程栈中维护自己私有的一套本地变量,这些本地变量相对于其他的线程来说是不可见的.也就是说,即便是同一套代码但是在不同的线程中执行,本地变量也相对于自己线程可见,不会共享.</p>
+
+<p>堆上包含在Java程序中创建的所有对象，无论是哪一个对象创建的. 一个对象被创建以后赋值给一个局部变量,这个对象也依然存放在堆中,只是这个局部变量会在其对应的线程栈中.一个对象包含的一些方法,这些方法可能包含本地变量。这些本地变量任然存放在线程栈上，即使这些方法所属的对象存放在堆上。
+一个对象的成员变量可能随着这个对象自身存放在堆上。不管这个成员变量是原始类型还是引用类型.静态成员变量跟随着类定义一起也存放在堆上。存放在堆上的对象可以被所有持有对这个对象引用的线程访问。当一个线程可以访问一个对象时，它也可以访问这个对象的成员变量。如果两个线程同时调用同一个对象上的同一个方法，它们将会都访问这个对象的成员变量，但是每一个线程都拥有这个本地变量的私有拷贝。</p>
+
+<p>硬件的内存架构
+多核CPU可以同时并发多个线程处理任务, 可以加快处理任务的速度. 每个CPU都有一系列的寄存器,除此之外还有CPU缓存.CPU在读取数据的时候首先读取寄存器,如果没有数据在读取CPU的缓存,如果缓存中没有命中在读取主存, 主存中存放这共享变量, 而寄存器之间的数据是私有的不共享的. 当CPU从主存中读取数据时,它会将主存的部分读到CPU缓存中,甚至可能将缓存中的部分内容读到它的内部寄存器中, 然后在寄存器中执行操作. 在CPU执行写操作的时候, CPU需要将结果写到主存中,它会将寄存器内部的值刷新到缓存中,然后在某个时间点将值刷新到主存中,注意这里就存在主存数据和寄存器数据不同步的情况.</p>
+
+<p>我们来考虑一个场景,共享对象初始化已经保存在主存中i=1, 跑在CPU的一个线程从主存中读取到一个变量i=1, 这个时候他将值保存到寄存器中进行+1的操作.但是CPU缓存没有被刷新回主存，对象修改后的版本对跑在其它CPU上的线程都是不可见的。这种方式可能导致每个线程拥有这个共享对象的私有拷贝，每个拷贝停留在不同的CPU缓存中。在多线程情况下就会出现进行了两次+1的操作,写会到主存中的i值是2而不是3.</p>
+
+<p>为了解决这个问题,在JAVA并发变成中可以采用volatile关键字.volatile关键字可以保证直接从主存中读取一个变量，如果这个变量被修改后，总是会被写回到主存中去。volatitle会触发处理器的一个LOCK前缀的指令,该指令会触发两件事情: 1: 将当前处理器缓存行的数据写回到系统内存; 2. 写会操作使得其他CPU里缓存的该内存地址的数据无效.在多处理器下,遵循缓存一致性原则,每个处理器会嗅探在总线上传播的数据来检查自己的缓存是不是过期了, 当处理器发现自己的缓存地址失效以后,就会将当前的缓存行设置为无效, 当处理器需要对数据进行操作的时候,再从内存中读取数据到缓存中.</p>
+
+<p>解决这个问题可以也使用Java同步块。一个同步块可以保证在同一时刻仅有一个线程可以进入代码的临界区。同步块还可以保证代码块中所有被访问的变量将会从主存中读入，当线程退出同步代码块时，所有被更新的变量都会被刷新回主存中去，不管这个变量是否被声明为volatile。</p>
+
+
+      </section>
+
+      <footer>
+        <span class="ribbon-outer">
+          <span class="ribbon-inner">
+            
+              <p>this project by <a href="http://github.com/glh1991">glh1991</a> can be found on <a href="http://github.com/glh1991/allensea.github.io">GitHub</a></p>
+            
+            
+          </span>
+          <span class="left-tail"></span>
+          <span class="right-tail"></span>
+        </span>
+        <p>Generated with <a href="https://pages.github.com">GitHub Pages</a> using Merlot</p>
+        <span class="octocat"></span>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
