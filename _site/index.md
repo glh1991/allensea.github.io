@@ -7,6 +7,7 @@
 * [Java 的类型信息](java-class-type-info.md)
 * [final和static](java-final-static.md)
 * [JAVA运行时的区域数据](Java运行时的区域数据.md)
+* [Java GC 介绍](java-gc介绍.md)
 
 ### Spring
 
