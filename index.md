@@ -8,6 +8,8 @@
 * [final和static](java-final-static.md)
 * [JAVA运行时的区域数据](Java运行时的区域数据.md)
 * [Java GC 介绍](java-gc介绍.md)
+* [Java 内存模型](java-内存模型.md)
+* [Java 并发编程概念](Java-并发编程概念.md)
 
 ### Spring
 
