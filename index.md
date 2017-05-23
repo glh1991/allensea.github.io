@@ -17,6 +17,10 @@
 * [Spring DI](spring-di.md)
 * [Spring AOP](spring-aop.md)
 
+### Dubbo 专题
+
+* [dubbo的通信协议] (dubbo-通信协议.md)
+
 ### 消息队列
 
 * [消息队列简介](mq-intro.md)
