@@ -10,6 +10,7 @@
 * [Java GC 介绍](java-gc介绍.md)
 * [Java 内存模型](java-内存模型.md)
 * [Java 并发编程概念](Java-并发编程概念.md)
+* [Java 线程池](java-线程池.md)
 
 ### Spring
 
@@ -25,4 +26,8 @@
 
 * [消息队列简介](mq-intro.md)
 * [消息队列使用场景](mq-scene.md)
+
+### hive
+
+* [hive入门](hive-guide.md)
 

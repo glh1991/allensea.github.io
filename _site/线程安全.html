@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=640">
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=7c3f8d5a83176f82c91f06fca91993ed4e5ebe07" media="screen">
+    <link rel="stylesheet" href="/assets/css/mobile.css" media="handheld, only screen and (max-device-width:640px)">
+    <link rel="stylesheet" href="/assets/css/non-screen.css" media="handheld, only screen and (max-device-width:640px)">
+
+    <script type="text/javascript" src="/assets/js/modernizr.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript" src="/assets/js/headsmart.min.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function () {
+        $('#main_content').headsmart()
+      })
+    </script>
+    <title>allen的日常 by glh1991</title>
+  </head>
+
+  <body>
+    <a id="forkme_banner" href="http://github.com/glh1991/allensea.github.io">View on GitHub</a>
+    <div class="shell">
+
+      <header>
+        <span class="ribbon-outer">
+          <span class="ribbon-inner">
+            <h1>allen的日常</h1>
+            <h2>请原谅我的胡说八道</h2>
+          </span>
+          <span class="left-tail"></span>
+          <span class="right-tail"></span>
+        </span>
+      </header>
+
+      
+        <div id="no-downloads">
+          <span class="inner">
+          </span>
+        </div>
+      
+
+
+      <span class="banner-fix"></span>
+
+
+      <section id="main_content">
+        <h1 id="线程安全">线程安全</h1>
+
+<h3 id="什么是线程安全">什么是线程安全</h3>
+
+<p>所谓线程安全就是指在多线程的情况下, 不管运行时采用何种调度方式或者这些线程将如何交替执行, 并在主调度代码中不需要任何额外的同步,这个类都能够表现出正确的行为则称为线程安全类.</p>
+
+<p>一个无状态的对象一定是线程安全的, 比如说serlvet, serlvet很好的封装了线程安全.</p>
+
+<h3 id="原子性">原子性</h3>
+
+<p>我们常见的一个操作流程”读取-修改-保存”, 在多线程的情况下这个流程里面,就存在一个竞态条件,会由于不恰当的时序出现不正确的结果.比如,value++操作.</p>
+
+<p>竞态条件的常见于延迟初始化, 复合操作.</p>
+
+<ul>
+  <li>
+    <p>延迟初始化(先检查后执行)
+  举个栗子:</p>
+
+    <div class="highlighter-rouge"><pre class="highlight"><code>  public class LazyInitRace {
+      private Object instance =null;
+      public Object getInstance() {
+          if(instance == null) 
+              instance = new Object();
+          return instance;
+      }
+  }
+</code></pre>
+    </div>
+    <p>这个例子中的getInstance就采用了延时初始化, 这里就存在线程不安全的情况.假定两个线程同时读取到instance实例都为空, 那就会创建两个一样的instance对象. 在单件模式中, 就是采用这种方式,但都要加上锁以避免延时初始化带来的问题.</p>
+  </li>
+  <li>
+    <p>复合操作</p>
+  </li>
+</ul>
+
+<p>要避免竞态条件问题,就需要在某个线程修改该变量时, 通过某种方式防止其他线程使用这个变量, 从而确保其他线程只能在修改操作完成之前或者之后读取和修改状态, 而不是发生在修改状态过程中.</p>
+
+<p>我们把”先检查后操作”和”读取-修改-保存”两个一起操作称为复合操作.上代码举个例子:</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>class CountFactorizer implement Servlet {
+    private final AtomicLong count = new AtomicLong(0);
+
+    public long getCount() {return count.get();}
+
+    public void incrCount(ServletRequest req, ServletResponse reso) {
+        count.incrementAndGet();
+    }
+}
+</code></pre>
+</div>
+<p>在这里我们没有采用long类型,而是采用AtomicLong.这个类是一个原子变量类,用于实现在数值和对象引用上的原子状态.</p>
+
+<h3 id="加锁机制">加锁机制</h3>
+
+<h4 id="内置锁">内置锁</h4>
+
+<p>每个JAVA对象都可以用作一个实现同步的一个内置锁来支持原子性: synchronized(同步代码块). 同步代码块分成两部分: 一个作为锁的对象引用, 一个作为有这个锁保护的代码块.以关键字synchronized修饰的方法就是一种横跨整个方法体的同步代码块, 其中该同步代码块的锁就是调用该方法的对象.静态的synchronized方法以Class对象作为锁.JAVA的同步代码块是一个互斥锁,意味着只有一个线程能够持有这个对象的锁,以保证原子性和隔离性.</p>
+
+<h4 id="重入">重入</h4>
+
+<p>当某个线程请求一个其他线程持有的锁时会阻塞, 而内置锁是可重入的, 所谓可重入就是当一个线程试图获得一个已经由它持有的锁时,依旧成功. 重入意味着获取锁的操作粒度是线程,而不是调用.</p>
+
+<p>实现重入的方式是, 为每个锁关联一个获取计数值和一个所有者线程. 当计数值为0时, 锁被认为没有任何线程持有, 当线程请求一个未被持有的锁时, JVM记录下持有者, 并且将获取锁的计数值+1, 如果同一个线程再次获取这个锁, 计数值将递增, 而当线程退出同步代码块时, 计数值-1. 直到计数值为0, 则认为锁被释放了. 重入可以避免死锁.</p>
+
+      </section>
+
+      <footer>
+        <span class="ribbon-outer">
+          <span class="ribbon-inner">
+            
+              <p>this project by <a href="http://github.com/glh1991">glh1991</a> can be found on <a href="http://github.com/glh1991/allensea.github.io">GitHub</a></p>
+            
+            
+          </span>
+          <span class="left-tail"></span>
+          <span class="right-tail"></span>
+        </span>
+        <p>Generated with <a href="https://pages.github.com">GitHub Pages</a> using Merlot</p>
+        <span class="octocat"></span>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>

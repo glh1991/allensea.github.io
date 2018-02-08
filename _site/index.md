@@ -10,6 +10,7 @@
 * [Java GC 介绍](java-gc介绍.md)
 * [Java 内存模型](java-内存模型.md)
 * [Java 并发编程概念](Java-并发编程概念.md)
+* [Java 线程池](java-线程池.md)
 
 ### Spring
 
@@ -17,8 +18,16 @@
 * [Spring DI](spring-di.md)
 * [Spring AOP](spring-aop.md)
 
+### Dubbo 专题
+
+* [dubbo的通信协议] (dubbo-通信协议.md)
+
 ### 消息队列
 
 * [消息队列简介](mq-intro.md)
 * [消息队列使用场景](mq-scene.md)
+
+### hive
+
+* [hive入门](hive-guide.md)
 

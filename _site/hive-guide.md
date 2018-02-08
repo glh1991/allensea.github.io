@@ -1,0 +1,51 @@
+# hive 入门
+最近开始做大数据相关的开发, 这边文章是记录一些hive相关的基础常用知识.
+
+hive是一个数据仓库, 物理上存储基于hdfs.可以使用类似sql(hql)的语句进行建表, 查询, 分组, 排序等等的实现数据的存储和处理分析一系列需求, 大大简化的hadoop的开发.
+
+### 元数据
+hive的元数据表中保存了创建的hive表和hdfs的映射关系. 元数据保存到mysql中.需要配置hive-site.xml和添加myslq-connector的jar包.
+配置相关:
+```
+```
+
+
+
+### hive 表的类型
+分为manager表和extenal表.
+创建一个manager的时候, 会将对应的文件移动到表对应的hdfs文件夹中,删除一个manager表, 除了删除元数据表中的信息还会删除hdfs中对应的文件. 而extenal表删除只会删除元数据表中的信息, 文件还可以在hdfs中找到.
+
+### hive的一些常用操作
+hive不能insert一条记录, 只能load一些文件. 原因很简单, 因为hive是基于hdfs的. 我们都知道hdfs是一个分布式的文件系统, 用来存储海量的数据文件, 对于往文件中append一行数据是不允许的.
+
+hive的建表语句很重要, 建什么类型的表, 分隔符用什么, 空字符串怎么处理, 都需要思考清楚
+
+另外hive的执行引擎, 可以是mapreduce也可以是spark.
+
+建表语句:
+create table t_order_tmp as selet id, user_id from t_order group by xxx order by xxxx; 这种建表语句可以从t_order选取部分字段创建一张临时表, 用来在做数据分析的时候作为中间过程. 这种思想在kylin中有应用.
+类似的做法还有向临时表中追加临时结果.
+create table xxx like yyy;
+insert overwrite xxx select * from yyy;
+注意这里的insert overwrite并不是写一条记录, 实际上在hdfs中是追加文件
+
+分区表
+```
+create table t_order (id int, user_id string, good_id string)
+partitiond by(month string)
+row format delimit fields terminated by '\t';
+```
+
+分区表很常用, 常常使用的场景是, 按月, 日等来统计分析数据. 如果不分区的话使用group by将会对整个数据集进行处理, 将大大增加数据处理的难度和效率,所以可以进行一些分区, 提高效率. 
+从上面的建表语句中会发现month可以是不定义在t_order的中, 所以需要在导数据的时候指定具体的分区逻辑.
+指定分区后, 在hdfs的存储实际上是在t_order目录下面又创建了一个分区文件夹, 比如你在导入数据的时候指定的分区是month_201710, 那么就会创建一个month_201710的文件夹.
+
+查询的时候可以根据分区进行查询:
+select count(*) from t_order where month="month_201710";
+虽然month并不是t_order的field, 但是还是可以通过这个分区字段来查询数据.
+
+
+hive还可以通过cli hive来实现多个hive命令写在shell 脚本中, 当然也可以使用其他的脚本语言. 通过脚本可以批量执行shell命令.
+
+
+hive自定义函数: 添加包含业务逻辑的jar包, 传到hive的lib目录下.
