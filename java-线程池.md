@@ -6,7 +6,7 @@
 ```
 private final static ExecutorService excutorService = Executors.newFixedThreadPool(3);
 ```
-提示推荐使用ThreadPoolExecutor的写法, 原因是使用newFixedThreadPool可能造成OOM的问题.那好, 我们来复习一下JAVA的线程池的概念和正确的写法姿势.
+提示推荐使用ThreadPool的写法, 原因是使用newFixedThreadPool可能造成OOM的问题.那好, 我们来复习一下JAVA的线程池的概念和正确的写法姿势.
 
 ### 基础概念
 ThreadPool顾名思义是一个线程池的管理机制, Executor可以自由的重用线程池中的空闲线程,线程池会回收空闲的线程或是在条件允许的情况下创建worker去执行task.
@@ -39,9 +39,7 @@ ThreadPool顾名思义是一个线程池的管理机制, Executor可以自由的
 N(线程数) = N(CPU数)*N(CPU)*(1+等待计算时间的系数)
 ```
 
-通过这个方式动态获取CPU数目:
-
-`intN_CPUS=Runtime.getRuntime().availableProcessors();`
+通过这个方式动态获取CPU数目:`intN_CPUS=Runtime.getRuntime().availableProcessors();`
 
 ### ThreadPoolExecutor实践
 
@@ -96,9 +94,9 @@ public ThreadPoolExecutor(int corePoolSize,
 #### 拒绝策略
 前面我们卖了个关子, 讲到队列如果满的情况如何处理, 现在我们就来谈谈拒绝策略.JDK提供了几种不同的RejectedExecutionHandler实现, 每种实现都包含不同的拒绝策略: AbortPolicy, CallerRunsPolicy, DiscardPolicy和DiscardOldestPolicy.下面我们一个个来讲.
 
-Abort: 这是一个默认的拒绝策略, 这个策略会抛出RejectedExecutionException, 开发者可以捕获这个异常, 然后编写自己的处理代码.
-Discard: 顾名思义就是抛弃了.
-DiscardOldest: 抛弃下一个将被执行的task, 然后再尝试提交到队列中.
+Abort: 这是一个默认的拒绝策略, 这个策略会抛出RejectedExecutionExceptioni, 开发者可以捕获这个异常, 然后编写自己的处理代码.
+Discard: 顾名思义就是抛弃了
+DiscardOldest: 抛弃下一个将被执行的task, 然后再尝试提交到队列中
 CallerRuns: 这个机制很有意思, 既不会抛弃, 也不会抛出异常, 而是会回退到调用者, 从而降低新任务的流量, 她不会在线程池的某个线程中执行新的task, 而是在一个调用了execute的线程中执行这个任务.也就是说, 会在调用execute的主线程中去执行.
 
 写了那么多, 我们来举个例子, 定义一个有界的线程池:
@@ -139,3 +137,22 @@ public class TestExecutor{
 	}
 }
 ```
+
+#### 线程工厂
+我们看构造方法里面还有一个线程工厂, 所谓线程工厂就是线程池每次创建一个线程都是通过线程工厂方法来完成的, 在默认的情况下,线程工厂方法将创建一个新的,非守护线程. 我们可以重新定义线程工厂方法来实现一些定制需求, 如给线程指定一个UncaughtExecptionHandler, 或是实例化一个定制的Thread类用来执行调试信息的记录,简单到给线程取一个名字等等.
+
+### 扩展ThreadPoolExecutor
+很多时候我们希望可以监控到我们的线程池的状态, 统计线程池的各种信息, 尝尝用来调优或是做一些报警的工作.
+
+我们可以自定一个MonitorThreadPoolExecutor继承自ThreadPoolExecutor类, ThreadPoolExecutor提供了几个在子类中改写的方法: beforeExecute, afterExecute, terminated. 下面我们一个个解释.
+
+* beforeExecute: 顾名思义, 在执行一个task之前调用. 如果beforeExecute抛出了RuntimeException, 那么任务就不会执行
+* afterExecute: afterExecute会在task完成以后(无论成功失败)被调用.配合beforeExecute我们可以统计一个task所花费的时间
+* terminated: 在所有的任务都已经完成, 所有的工作线程都关闭的情况下会被调用, terminated用来释放各种资源, 我们可以用他来统计一些信息
+
+
+
+### 思考
+* 关于线程池大小的设定, 如何调优
+* 核心线程池数量和最大线程池数量
+* 扩展ThreadPoolExecutor, 监控,调优线程池
