@@ -64,10 +64,65 @@ int count;
   
   这个对于Disruptor来说是核心所在, Sequence通过顺序递增的序号来编号管理事件，对事件的处理过程总是沿着序号逐个递增处理. 一个Sequence用于跟踪标识某个特定的事件处理者(Producer/Consumer)的处理进度.注意: Producer和Consumer是分别用两个 Sequence来管理的. Sequence是一个long类型的数值占8bit, 一个CPU的缓存行大小64bit, 为了避免伪共享的问题(Producer和Consumer的Sequence落在同一条缓存行上) Sequence会使用一个长度为8的long[],最后一位保存value, 其他位置用0填充缓存行的方式,来实现避免伪共享. 同时通过CAS操作来维护value, 做序号的递增.
   
+* Sequencer
+
+  Sequencer有两个实现类, SingleProducerSequencer, MultiProducerSequencer, 它们定义在生产者和消费者之间快速、正确地传递数据的并发算法. 
+  我们先来看SingleProducerSequencer的实现.
+  
+  ```
+  @Override  
+  private boolean hasAvailableCapacity(int requiredCapacity, boolean doStore)
+    {
+      // 下一个序列值
+        long nextValue = this.nextValue;
+
+    // 申请序列点, 生产者序列值不能比消费者序列值大一圈
+        long wrapPoint = (nextValue + requiredCapacity) - bufferSize;
+        // 消费者上次申请的消费序列
+        long cachedGatingSequence = this.cachedValue;
+
+     
+        if (wrapPoint > cachedGatingSequence || cachedGatingSequence > nextValue)
+        {
+            if (doStore)
+            {
+                cursor.setVolatile(nextValue);  // StoreLoad fence
+            }
+      // gatingSequences 是多个consumer的消费序列.
+            long minSequence = Util.getMinimumSequence(gatingSequences, nextValue);
+            this.cachedValue = minSequence;
+
+            if (wrapPoint > minSequence)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+  ```
+  我们来做一个输入一个case. 假设buffsize=32, nextValue = 60, requiredValue=3, cachedValue=30, 那么wrapPoint=63-32=31. 也就是说, 这个时候provider去申请buffer的时候发现比consumer上次申请的序列要超一圈了, 这个时候就需要判定是否能够支持provider支持申请ringbuffer.这个时候重新去获取consumer的消费结果, 获得最小的序列值并再次做判定, 如果最小的序列值还是小于wrapPoint, 则说明生产者没有办法申请ringbuffer.
+  
+  从上面的源码我们可以看出SingleProducerSequencer除了要维护nextValue以外还需要追踪cachedValue, 也就是消费者的最小消费序列值.
+  
+  我们再来看一看发布事件的代码, 发布一个序列以后, 将会唤起事件consumer
+  
+  ```
+  @Override
+    public void publish(long sequence)
+    {
+        cursor.set(sequence);
+        waitStrategy.signalAllWhenBlocking();
+    }
+  ```
+  
+  接着, 我们再来看看MultiProducerSequencer的实现, 相对于SingleProducerSequencer不同的是, MultiProducerSequencer添加了一个availableBuffer.是一个int型的数组.size大小和RingBuffer的Size一样大, 用来追踪Ringbuffer的每个槽的状态.初始化为-1, 每次赋的值是当前的圈数.
 * 无锁设计
 
   采用CAS的方式, 相对于使用加锁方式性能更高效.
 
+
 ### 参考资料
 * https://tech.meituan.com/disruptor.html
 * http://blog.decaywood.me/2016/01/22/disruptor-guide/ 
+* http://brokendreams.iteye.com/blog/2255703
